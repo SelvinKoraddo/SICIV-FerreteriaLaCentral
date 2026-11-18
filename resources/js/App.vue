@@ -140,7 +140,7 @@ onBeforeUnmount(() => {
                 <span class="brand-symbol" aria-hidden="true"><i class="fa-solid fa-screwdriver-wrench"></i></span>
                 <strong>SICIV</strong>
                 <span class="brand-divider"></span>
-                <span class="business-name">Ferretería El Progreso, S.A. de C.V.</span>
+                <span class="business-name">Ferretería La Central, S.A. de C.V.</span>
             </div>
             <div class="topbar-user">
                 <div class="user-details"><strong>{{ userName }}</strong><span>{{ role }}</span></div>

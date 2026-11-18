@@ -141,7 +141,7 @@ onMounted(() => usuarioInput.value?.focus());
       </form>
 
       <footer class="login-footer">
-        <span>Ferretería El Progreso, S.A. de C.V.</span>
+        <span>Ferretería La Central, S.A. de C.V.</span>
         <span>SICIV v1.0.0 · {{ currentYear }}</span>
       </footer>
     </section>
