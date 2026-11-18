@@ -22,7 +22,8 @@ class UpdateProveedorRequest extends FormRequest
                 'required',
                 'string',
                 'max:20',
-                Rule::unique('proveedores', 'nit')->ignore($proveedor->id_proveedor),
+                Rule::unique('proveedores', 'nit')
+                    ->ignore($proveedor->getKey(), $proveedor->getKeyName()),
             ],
             'telefono' => ['nullable', 'string', 'max:15'],
             'correo' => ['nullable', 'email', 'max:100'],

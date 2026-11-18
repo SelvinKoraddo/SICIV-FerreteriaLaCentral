@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreCategoriaRequest extends FormRequest
 {
@@ -15,12 +14,7 @@ class StoreCategoriaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => [
-                'required',
-                'string',
-                'max:50',
-                Rule::unique('categorias', 'nombre')->ignore($this->route('categoria')?->id_categoria, 'id_categoria'),
-            ],
+            'nombre' => ['required', 'string', 'max:50', 'unique:categorias,nombre'],
             'descripcion' => ['nullable', 'string', 'max:255'],
             'activa' => ['sometimes', 'boolean'],
         ];

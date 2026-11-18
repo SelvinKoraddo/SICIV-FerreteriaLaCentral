@@ -6,11 +6,11 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExistenciaController;
 use App\Http\Controllers\ProductoController;
-use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\Api\ProveedorApiController;
 use App\Http\Controllers\Api\EntradaInventarioApiController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ReporteInventarioController;
 use Illuminate\Support\Facades\Route;
 
 // El LoginRequest limita intentos por usuario e IP; este throttle agrega un tope global por IP.
@@ -43,15 +43,19 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/alertas', [AlertaController::class, 'index']);
     Route::get('/alertas/conteo', [AlertaController::class, 'conteo']);
 
+    // El historial se puede consultar con los tres roles; el ranking es solo del administrador.
+    Route::get('/movimientos', [ReporteInventarioController::class, 'movimientos']);
+    Route::get('/reportes/mayor-movimiento', [ReporteInventarioController::class, 'mayorMovimiento'])
+        ->middleware('role:ADMINISTRADOR');
+
     Route::get('/ventas', [VentaController::class, 'index']);
     Route::get('/ventas/{venta}', [VentaController::class, 'show']);
-    Route::get('/reportes/movimientos', [ReporteController::class, 'movimientos']);
-    Route::get('/reportes/productos-mayor-movimiento', [ReporteController::class, 'productosMayorMovimiento']);
 
     Route::middleware('role:ADMINISTRADOR,ENCARGADO_INVENTARIO')->group(function (): void {
         Route::post('/categorias', [CategoriaController::class, 'store']);
         Route::put('/categorias/{categoria}', [CategoriaController::class, 'update']);
-        Route::patch('/categorias/{categoria}/estado', [CategoriaController::class, 'toggleStatus']);
+        Route::patch('/categorias/{categoria}/estado', [CategoriaController::class, 'cambiarEstado']);
+
         // HU-03: registro y edición de productos del catálogo
         Route::post('/productos', [ProductoController::class, 'store']);
         Route::put('/productos/{producto}', [ProductoController::class, 'update']);

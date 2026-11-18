@@ -14,7 +14,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import api from '../../services/api';
 
-const emit = defineEmits(['counts-changed']);
+const emit = defineEmits(['counts-changed', 'open-history']);
 
 const SEARCH_DEBOUNCE_MS = 350;
 const PAGE_SIZE = 200;
@@ -180,6 +180,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer));
               <th scope="col" class="align-right">Mínimo</th>
               <th scope="col" class="align-right" title="Cantidad a reponer para alcanzar el mínimo">Faltante</th>
               <th scope="col" class="align-center">Alerta</th>
+              <th scope="col">Historial</th>
             </tr>
           </thead>
           <tbody>
@@ -195,6 +196,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer));
                   <i class="fa-solid" :class="LEVELS[row.nivel].icon" aria-hidden="true"></i> {{ row.nivel_etiqueta }}
                 </span>
               </td>
+              <td><button type="button" class="table-action" :aria-label="`Ver historial de ${row.nombre}`" @click="emit('open-history', row.id_producto)">Ver historial</button></td>
             </tr>
           </tbody>
         </table>

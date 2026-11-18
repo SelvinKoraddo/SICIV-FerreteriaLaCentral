@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCategoriaRequest;
+use App\Http\Requests\UpdateCategoriaRequest;
 use App\Models\Categoria;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class CategoriaController extends Controller
 {
@@ -15,30 +18,45 @@ class CategoriaController extends Controller
 
     public function store(StoreCategoriaRequest $request): JsonResponse
     {
-        return response()->json(Categoria::create($request->validated()), 201);
+        // Incluye el estado inicial que se guardó al crear la categoría.
+        $categoria = Categoria::create($request->validated())->refresh()->loadCount('productos');
+
+        return response()->json([
+            'message' => 'Categoría registrada correctamente.',
+            'categoria' => $categoria,
+        ], 201);
     }
 
-    public function update(StoreCategoriaRequest $request, Categoria $categoria): JsonResponse
+    public function update(UpdateCategoriaRequest $request, Categoria $categoria): JsonResponse
     {
         $categoria->update($request->validated());
 
-        return response()->json($categoria->loadCount('productos'));
+        return response()->json([
+            'message' => 'Categoría actualizada correctamente.',
+            'categoria' => $categoria->loadCount('productos'),
+        ]);
     }
 
-    public function toggleStatus(Categoria $categoria): JsonResponse
+    public function cambiarEstado(Request $request, Categoria $categoria): JsonResponse
     {
-        $this->authorize('manage', $categoria);
-        $categoria->update(['activa' => ! $categoria->activa]);
+        $validated = $request->validate(['activa' => ['required', 'boolean']]);
+
+        if (! $validated['activa']) {
+            Gate::authorize('delete', $categoria);
+        }
+
+        $categoria->update(['activa' => $validated['activa']]);
+        $estado = $categoria->activa ? 'activada' : 'desactivada';
 
         return response()->json([
-            'message' => $categoria->activa ? 'Categoría activada.' : 'Categoría desactivada.',
+            'message' => "Categoría {$estado} correctamente.",
             'categoria' => $categoria->loadCount('productos'),
         ]);
     }
 
     public function destroy(Categoria $categoria): JsonResponse
     {
-        $this->authorize('delete', $categoria);
+        Gate::authorize('delete', $categoria);
         $categoria->update(['activa' => false]);
 
         return response()->json(['message' => 'Categoría desactivada.']);

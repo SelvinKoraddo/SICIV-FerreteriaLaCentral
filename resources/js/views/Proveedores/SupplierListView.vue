@@ -12,7 +12,7 @@
 
     <div v-if="error" class="rounded-lg bg-red-50 border border-red-200 text-red-700 p-3 text-xs">{{ error }}</div>
 
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="supplier-table-shell bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <table class="w-full text-left border-collapse table-striped">
         <thead>
           <tr class="bg-slate-100 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
@@ -174,6 +174,15 @@ onMounted(load);
 </script>
 
 <style scoped>
+.supplier-table-shell { overflow-x: auto !important; }
+.supplier-table-shell table { min-width: 820px; }
+.modal-card form > .grid { min-width: 0; }
+.modal-card table { min-width: 420px; }
+.modal-card { max-height: calc(100vh - 32px); overflow-y: auto; }
+
+@media (max-width: 560px) {
+  .modal-card form > .grid { grid-template-columns: 1fr; }
+}
 label{display:flex;flex-direction:column;gap:.25rem;font-size:.75rem;font-weight:600;text-transform:uppercase;color:#334155}
 input{width:100%;padding:.625rem;border:1px solid #cbd5e1;border-radius:.5rem;font-size:.75rem;text-transform:none;font-weight:400}
 .table-striped tbody tr:nth-child(even){background:#F8FAFC}

@@ -8,7 +8,7 @@ const error = ref('');
 const selectedSale = ref(null);
 const detailLoading = ref(false);
 const props = defineProps({ user: Object });
-const filters = ref({ fecha: '', numero: '' });
+const filters = ref({ fecha_desde: '', fecha_hasta: '', numero: '' });
 
 const isSeller = computed(() => props.user?.rol === 'VENDEDOR');
 
@@ -16,10 +16,18 @@ const loadSales = async () => {
   loading.value = true;
   error.value = '';
 
+  if (filters.value.fecha_desde && filters.value.fecha_hasta
+    && filters.value.fecha_desde > filters.value.fecha_hasta) {
+    error.value = 'La fecha final no puede ser anterior a la fecha inicial.';
+    loading.value = false;
+    return;
+  }
+
   try {
     const response = await api.get('/api/ventas', {
       params: {
-        fecha: filters.value.fecha || undefined,
+        fecha_desde: filters.value.fecha_desde || undefined,
+        fecha_hasta: filters.value.fecha_hasta || undefined,
         numero: filters.value.numero.trim() || undefined,
         per_page: 100,
       },
@@ -62,7 +70,8 @@ onMounted(loadSales);
       </div>
     </div>
     <div class="search-toolbar sales-filters">
-      <label>RANGO DE FECHAS<input v-model="filters.fecha" type="date"></label>
+      <label>DESDE<input v-model="filters.fecha_desde" type="date"></label>
+      <label>HASTA<input v-model="filters.fecha_hasta" type="date"></label>
       <label>VENDEDOR
         <input v-if="isSeller" :value="props.user?.name || 'Vendedor'" disabled>
         <select v-else disabled>

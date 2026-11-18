@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\CantidadSegunUnidad;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -35,10 +36,13 @@ class StoreEntradaRequest extends FormRequest
                 Rule::exists('productos', 'id_producto')
                     ->where('activo', true),
             ],
+            // Pide una cantidad positiva, con hasta dos decimales y permitida por la unidad del producto.
             'detalles.*.cantidad' => [
                 'required',
                 'numeric',
+                'decimal:0,2',
                 'gt:0',
+                new CantidadSegunUnidad(),
             ],
             'detalles.*.costo_unitario' => [
                 'required',
@@ -47,4 +51,14 @@ class StoreEntradaRequest extends FormRequest
             ],
         ];
     }
+    
+//Mensaje de error para cantidad decimal
+    public function messages(): array
+{
+    return [
+        'detalles.*.cantidad.decimal' =>
+            'La cantidad debe tener como máximo 2 decimales.',
+    ];
+}
+
 }

@@ -1,8 +1,9 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import api from '../../services/api';
 
 const products = ref([]);
+const units = ref([]);
 const selectedId = ref('');
 const selectedQuantity = ref(1);
 const cart = ref([]);
@@ -12,6 +13,19 @@ const error = ref('');
 const toast = ref('');
 const receipt = ref(null);
 let toastTimer;
+let receiptTimer;
+
+const closeReceipt = () => {
+  clearTimeout(receiptTimer);
+  receipt.value = null;
+};
+
+// El aviso se cierra solo después de tres segundos y se renueva con cada venta.
+const showReceipt = (sale) => {
+  clearTimeout(receiptTimer);
+  receipt.value = sale;
+  receiptTimer = setTimeout(closeReceipt, 3000);
+};
 
 const selectedProduct = computed(() =>
   products.value.find((product) => String(product.id_producto) === String(selectedId.value)),
@@ -21,13 +35,20 @@ const total = computed(() =>
   cart.value.reduce((sum, item) => sum + (Number(item.cantidad) || 0) * item.precio_unitario, 0),
 );
 
-const hasInvalidQuantity = computed(() =>
-  cart.value.some((item) =>
-    !Number.isFinite(Number(item.cantidad))
-    || Number(item.cantidad) <= 0
-    || Number(item.cantidad) > Number(item.existencia_actual),
-  ),
-);
+// Revisa los decimales, la unidad y las existencias antes de guardar la venta.
+const quantityError = (product, value) => {
+  const quantity = Number(value);
+  if (value === '' || !Number.isFinite(quantity) || quantity <= 0) return 'La cantidad debe ser mayor que cero.';
+  if (!/^\d+(?:\.\d{1,2})?$/.test(String(value))) return 'La cantidad debe tener como máximo 2 decimales.';
+  const unit = units.value.find((unit) => unit.valor === product.unidad_medida);
+  if (unit?.permite_fracciones === false && !Number.isInteger(quantity)) {
+    return `La unidad del producto '${unit.etiqueta}' no admite cantidades fraccionarias.`;
+  }
+  if (quantity > Number(product.existencia_actual)) return 'La cantidad solicitada supera la existencia disponible.';
+  return '';
+};
+const quantityStep = (product) => units.value.find((unit) => unit.valor === product.unidad_medida)?.permite_fracciones === false ? '1' : '0.01';
+const hasInvalidQuantity = computed(() => cart.value.some((item) => quantityError(item, item.cantidad)));
 
 const showToast = (message) => {
   toast.value = message;
@@ -42,8 +63,12 @@ const loadProducts = async () => {
   error.value = '';
 
   try {
-    const response = await api.get('/api/productos', { params: { activos: true, per_page: 100 } });
+    const [response, measures] = await Promise.all([
+      api.get('/api/productos', { params: { activos: true, per_page: 100 } }),
+      api.get('/api/productos/unidades-medida'),
+    ]);
     products.value = response.data.data ?? response.data;
+    units.value = measures.data;
   } catch (exception) {
     error.value = exception.response?.data?.message || 'No fue posible cargar el inventario.';
   } finally {
@@ -61,7 +86,12 @@ const addToCart = () => {
   }
 
   const existing = cart.value.find((item) => item.id_producto === product.id_producto);
-  const nextQuantity = Number(existing?.cantidad ?? 0) + quantity;
+  const message = quantityError(product, selectedQuantity.value);
+  if (message) {
+    showToast(message);
+    return;
+  }
+  const nextQuantity = Math.round((Number(existing?.cantidad ?? 0) + quantity) * 100) / 100;
 
   if (nextQuantity > Number(product.existencia_actual)) {
     showToast('La cantidad solicitada supera la existencia disponible.');
@@ -88,13 +118,14 @@ const addToCart = () => {
 
 const removeFromCart = (id) => {
   cart.value = cart.value.filter((item) => item.id_producto !== id);
+  error.value = '';
 };
 
 const updateQuantity = (item, value) => {
   item.cantidad = value;
-  if (value !== '' && Number(value) > Number(item.existencia_actual)) {
-    showToast(`La existencia máxima de ${item.nombre} es ${item.existencia_actual}.`);
-  }
+  error.value = '';
+  const message = quantityError(item, value);
+  if (message) showToast(message);
 };
 
 const cancelSale = () => {
@@ -102,7 +133,7 @@ const cancelSale = () => {
     cart.value = [];
     selectedId.value = '';
     selectedQuantity.value = 1;
-    receipt.value = null;
+    closeReceipt();
     error.value = '';
   }
 };
@@ -125,7 +156,7 @@ const confirmSale = async () => {
       })),
     });
 
-    receipt.value = response.data;
+    showReceipt(response.data);
     cart.value = [];
     selectedId.value = '';
     selectedQuantity.value = 1;
@@ -140,6 +171,10 @@ const confirmSale = async () => {
 };
 
 onMounted(loadProducts);
+onBeforeUnmount(() => {
+  clearTimeout(receiptTimer);
+  clearTimeout(toastTimer);
+});
 </script>
 
 <template>
@@ -154,13 +189,13 @@ onMounted(loadProducts);
       <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
       {{ toast }}
     </div>
-    <div v-if="receipt" class="receipt">
+    <div v-if="receipt" class="receipt" role="status" aria-live="polite">
       <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
       <div>
         <strong>Venta registrada correctamente</strong>
         <span>Comprobante: {{ receipt.numero }}</span>
       </div>
-      <button type="button" aria-label="Cerrar comprobante" @click="receipt = null">&times;</button>
+      <button type="button" aria-label="Cerrar comprobante" @click="closeReceipt">&times;</button>
     </div>
 
     <div class="pos-grid">
@@ -206,7 +241,8 @@ onMounted(loadProducts);
             </div>
             <div class="add-product-row">
               <label for="pos-quantity">Cantidad a vender</label>
-              <input id="pos-quantity" v-model="selectedQuantity" type="number" min="0.01" step="0.01"
+              <input id="pos-quantity" v-model="selectedQuantity" type="number" :min="quantityStep(selectedProduct)" :step="quantityStep(selectedProduct)"
+                :aria-invalid="Boolean(quantityError(selectedProduct, selectedQuantity))"
                 :max="selectedProduct.existencia_actual">
               <button type="button" class="pos-button detail-button" @click="addToCart">
                 <i class="fa-solid fa-cart-plus" aria-hidden="true"></i>
@@ -237,9 +273,10 @@ onMounted(loadProducts);
               <strong>{{ item.nombre }}</strong>
               <small>{{ item.cantidad }} x ${{ item.precio_unitario.toFixed(2) }}</small>
             </div>
-            <input :value="item.cantidad" type="number" min="0" step="0.01" :max="item.existencia_actual"
-              :aria-invalid="!Number(item.cantidad) || Number(item.cantidad) > item.existencia_actual"
-              :class="{ 'quantity-invalid': Number(item.cantidad) <= 0 || Number(item.cantidad) > item.existencia_actual }"
+            <input :value="item.cantidad" type="number" :min="quantityStep(item)" :step="quantityStep(item)"
+              :aria-label="`Cantidad de ${item.nombre}`" :title="quantityError(item, item.cantidad)" :max="item.existencia_actual"
+              :aria-invalid="Boolean(quantityError(item, item.cantidad))"
+              :class="{ 'quantity-invalid': Boolean(quantityError(item, item.cantidad)) }"
               @input="updateQuantity(item, $event.target.value)">
             <strong>${{ (item.cantidad * item.precio_unitario).toFixed(2) }}</strong>
             <button type="button" class="remove-item" aria-label="Eliminar producto"

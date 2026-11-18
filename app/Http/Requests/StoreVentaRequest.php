@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Venta;
+use App\Rules\CantidadSegunUnidad;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,7 +21,8 @@ class StoreVentaRequest extends FormRequest
             'fecha' => ['required', 'date'],
             'detalles' => ['required', 'array', 'min:1'],
             'detalles.*.id_producto' => ['required', 'integer', Rule::exists('productos', 'id_producto')->where('activo', true)],
-            'detalles.*.cantidad' => ['required', 'numeric', 'gt:0'],
+            // Pide una cantidad positiva, con hasta dos decimales y permitida por la unidad del producto.
+            'detalles.*.cantidad' => ['required', 'numeric', 'decimal:0,2', 'gt:0', new CantidadSegunUnidad()],
         ];
     }
 }

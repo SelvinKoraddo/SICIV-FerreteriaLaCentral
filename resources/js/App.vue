@@ -13,13 +13,24 @@ import AlertListView from './views/Inventario/AlertListView.vue';
 import SalesListView from './views/Ventas/SalesListView.vue';
 import PosView from './views/Ventas/PosView.vue';
 import SalesSummaryView from './views/Ventas/SalesSummaryView.vue';
-import TopProductsView from './views/Ventas/TopProductsView.vue';
 import ProductSearchView from './views/Catalogo/ProductSearchView.vue';
 import UsersView from './views/Usuarios/UsersView.vue';
+import TopProductsView from './views/Inventario/TopProductsView.vue';
 import MovementHistoryView from './views/Inventario/MovementHistoryView.vue';
 
 const user = ref(null);
 const screen = ref('dashboard');
+const historyProduct = ref('');
+
+// Abre la historia del producto elegido sin tener que buscarlo otra vez.
+const openHistory = (productId) => {
+    historyProduct.value = productId;
+    screen.value = 'movement_history';
+};
+const navigate = (destination) => {
+    historyProduct.value = '';
+    screen.value = destination;
+};
 const loading = ref(true);
 const error = ref('');
 const loginNotice = ref('');
@@ -74,6 +85,7 @@ const loadSession = async () => {
 const resetSession = () => {
     user.value = null;
     screen.value = 'dashboard';
+    historyProduct.value = '';
     stopAlertPolling();
 };
 
@@ -120,7 +132,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div v-if="loading" class="loading-screen">Cargando Ferretería La Central...</div>
+    <div v-if="loading" class="loading-screen">Cargando SICIV...</div>
     <LoginForm v-else-if="!user" :notice="loginNotice" @authenticated="onAuthenticated" />
     <div v-else class="app-shell">
         <header class="topbar">
@@ -128,7 +140,7 @@ onBeforeUnmount(() => {
                 <span class="brand-symbol" aria-hidden="true"><i class="fa-solid fa-screwdriver-wrench"></i></span>
                 <strong>SICIV</strong>
                 <span class="brand-divider"></span>
-                <span class="business-name">Ferretería La Central, S.A. de C.V.</span>
+                <span class="business-name">Ferretería El Progreso, S.A. de C.V.</span>
             </div>
             <div class="topbar-user">
                 <div class="user-details"><strong>{{ userName }}</strong><span>{{ role }}</span></div>
@@ -139,7 +151,7 @@ onBeforeUnmount(() => {
         </header>
 
         <Sidebar :user="user" :screen="screen" :can-manage-catalog="canManageCatalog" :can-sell="canSell"
-            :alert-count="alertCounts.total" @navigate="screen = $event" />
+            :alert-count="alertCounts.total" @navigate="navigate" />
 
         <main class="main-content">
             <p v-if="error" class="alert alert-error">{{ error }}</p>
@@ -160,13 +172,13 @@ onBeforeUnmount(() => {
             <SupplierListView v-else-if="screen === 'suppliers'" />
             <InventoryEntryView v-else-if="screen === 'inventory_entry'" />
             <StockListView v-else-if="screen === 'stocks'" :can-export="canManageCatalog" />
-            <AlertListView v-else-if="screen === 'alerts'" @counts-changed="alertCounts = $event" />
+            <AlertListView v-else-if="screen === 'alerts'" @counts-changed="alertCounts = $event" @open-history="openHistory" />
+            <MovementHistoryView v-else-if="screen === 'movement_history'" :key="historyProduct" :initial-product="historyProduct" />
+            <TopProductsView v-else-if="screen === 'top_products' && role === 'ADMINISTRADOR'" />
             <ProductSearchView v-else-if="screen === 'product_search'" />
             <SalesListView v-else-if="screen === 'sales_history'" :user="user" />
             <PosView v-else-if="screen === 'pos'" />
             <SalesSummaryView v-else-if="screen === 'sales_summary'" />
-            <TopProductsView v-else-if="screen === 'top_products'" />
-            <MovementHistoryView v-else-if="screen === 'movement_history'" />
             <UsersView v-else-if="screen === 'users'" />
         </main>
     </div>

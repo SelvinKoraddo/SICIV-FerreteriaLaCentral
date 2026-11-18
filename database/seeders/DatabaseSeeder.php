@@ -15,9 +15,12 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
+    /**
+     * Seed the application's database.
+     */
     public function run(): void
     {
-        //TODOS LOS DATOS INSERTADOS SON DE PRUEBA, NO SON REALES NI SE USAN EN PRODUCCIÓN
+                //TODOS LOS DATOS INSERTADOS SON DE PRUEBA, NO SON REALES NI SE USAN EN PRODUCCIÓN
         $usuarios = collect([
             
             ['name' => 'Administrador', 'email' => 'admin@ferreteria.test', 'usuario' => 'admin', 'rol' => 'ADMINISTRADOR'],
@@ -117,5 +120,6 @@ class DatabaseSeeder extends Seeder
                 'id_detalle_venta' => $detalle->id_detalle_venta,
             ]);
         });
+
     }
 }

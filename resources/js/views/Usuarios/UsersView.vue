@@ -17,7 +17,7 @@ const form = ref({});
 
 const filteredUsers = computed(() => users.value.filter((user) => {
     const text = search.value.trim().toLowerCase();
-    const matchesText = !text || [user.name, user.usuario, user.email]
+    const matchesText = !text || [user.name, user.usuario]
         .some((value) => String(value || '').toLowerCase().includes(text));
     const matchesRole = !roleFilter.value || user.rol === roleFilter.value;
     const matchesStatus = !statusFilter.value
@@ -102,15 +102,14 @@ onMounted(loadUsers);
         </div>
 
         <div class="search-toolbar users-filters">
-            <label>USUARIO<input v-model="search" type="text" placeholder="Buscar usuario"></label>
-            <label>ROL<select v-model="roleFilter">
+            <label class="users-search">USUARIO<input v-model="search" type="search" placeholder="Buscar por nombre y usuario"></label>
+            <label class="users-role">ROL<select v-model="roleFilter">
                 <option value="">Todos los roles</option><option>ADMINISTRADOR</option>
                 <option>VENDEDOR</option><option>ENCARGADO_INVENTARIO</option>
             </select></label>
-            <label>ESTADO<select v-model="statusFilter">
+            <label class="users-status">ESTADO<select v-model="statusFilter">
                 <option value="">Todos</option><option value="activo">Activo</option><option value="inactivo">Inactivo</option>
             </select></label>
-            <button class="filter-button" type="button" @click="loadUsers">Actualizar</button>
         </div>
 
         <div class="feature-table-wrap">
@@ -158,11 +157,12 @@ onMounted(loadUsers);
 
 <style scoped>
 .users-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
-.users-filters { align-items: end; }
-.action-btn, .filter-button { border: 0; border-radius: 8px; color: #fff; background: #1f3b68; font-weight: 700; cursor: pointer; }
+.users-filters { display: grid; align-items: end; grid-template-columns: minmax(220px, 1.5fr) 210px 150px; }
+.users-filters label { min-width: 0; }
+.users-filters select { width: 100%; min-width: 0; max-width: 100%; }
+.action-btn { border: 0; border-radius: 8px; color: #fff; background: #f28c28; font-weight: 700; cursor: pointer; }
 .action-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; }
-.filter-button { min-width: 140px; height: 48px; }
-.action-btn:hover, .filter-button:hover { background: #25497e; }
+.action-btn:hover { background: #e07b1a; }
 .status-badge { display: inline-flex; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
 .status-badge.active { color: #166534; background: #dcfce7; }
 .status-badge.inactive { color: #991b1b; background: #fee2e2; }
@@ -183,5 +183,13 @@ onMounted(loadUsers);
 .checkbox-label { display: flex !important; grid-template-columns: auto 1fr; align-items: center; }
 .checkbox-label input { min-height: auto; }
 .cancel-button { padding: 12px 18px; border: 0; border-radius: 8px; color: #475569; background: #e2e8f0; cursor: pointer; }
-@media (max-width: 700px) { .users-heading { flex-direction: column; } .users-filters { flex-direction: column; align-items: stretch; } .filter-button { width: 100%; } }
+@media (max-width: 1200px) {
+    .users-filters { grid-template-columns: minmax(0, 1fr) 140px 100px; }
+}
+@media (max-width: 895px) {
+    .users-filters { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+    .users-heading { flex-direction: column; }
+}
 </style>

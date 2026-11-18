@@ -92,79 +92,78 @@ onMounted(() => usuarioInput.value?.focus());
     <section class="login-card" aria-labelledby="login-title">
       <header class="login-header">
         <div class="brand-mark" aria-hidden="true"><i class="fa-solid fa-screwdriver-wrench"></i></div>
-        <h1 id="login-title">SICIV Ferretería La Central</h1>
-        <p class="login-subtitle">Sistema de Control de Inventario y Ventas</p>
+        <h1 id="login-title">SICIV Ferretería</h1>
+        <p class="eyebrow">Sistema de Control de Inventario y Ventas</p>
       </header>
 
-      <div class="login-content">
-        <p v-if="notice && !generalError" class="login-notice" role="status">
-          <i class="fa-solid fa-circle-info" aria-hidden="true"></i> {{ notice }}
-        </p>
-        <p v-if="generalError" class="alert alert-error" role="alert">
-          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {{ generalError }}
-        </p>
+      <p v-if="notice && !generalError" class="login-notice" role="status">
+        <i class="fa-solid fa-circle-info" aria-hidden="true"></i> {{ notice }}
+      </p>
+      <p v-if="generalError" class="alert alert-error" role="alert">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {{ generalError }}
+      </p>
 
-        <form class="login-form" novalidate @submit.prevent="submit">
-          <div class="field" :class="{ invalid: errors.usuario }">
-            <label for="login-usuario">Usuario</label>
-            <div class="input-wrap">
-              <i class="fa-solid fa-user" aria-hidden="true"></i>
-              <input id="login-usuario" ref="usuarioInput" v-model="form.usuario" type="text" autocomplete="username"
-                autocapitalize="none" spellcheck="false" maxlength="50" placeholder="Tu nombre de usuario"
-                :aria-invalid="Boolean(errors.usuario)" :aria-describedby="errors.usuario ? 'login-usuario-error' : undefined"
-                :disabled="loading" @input="errors.usuario = ''">
-            </div>
-            <small v-if="errors.usuario" id="login-usuario-error" class="field-error">{{ errors.usuario }}</small>
+      <form class="login-form" novalidate @submit.prevent="submit">
+        <div class="field" :class="{ invalid: errors.usuario }">
+          <label for="login-usuario">Usuario</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-user" aria-hidden="true"></i>
+            <input id="login-usuario" ref="usuarioInput" v-model="form.usuario" type="text" autocomplete="username"
+              autocapitalize="none" spellcheck="false" maxlength="50" placeholder="Tu nombre de usuario"
+              :aria-invalid="Boolean(errors.usuario)" :aria-describedby="errors.usuario ? 'login-usuario-error' : undefined"
+              :disabled="loading" @input="errors.usuario = ''">
           </div>
+          <small v-if="errors.usuario" id="login-usuario-error" class="field-error">{{ errors.usuario }}</small>
+        </div>
 
-          <div class="field" :class="{ invalid: errors.password }">
-            <label for="login-password">Contraseña</label>
-            <div class="input-wrap">
-              <i class="fa-solid fa-lock" aria-hidden="true"></i>
-              <input id="login-password" v-model="form.password" :type="showPassword ? 'text' : 'password'"
-                autocomplete="current-password" maxlength="255" placeholder="Tu contraseña"
-                :aria-invalid="Boolean(errors.password)"
-                :aria-describedby="errors.password ? 'login-password-error' : undefined" :disabled="loading"
-                @input="errors.password = ''">
-              <button type="button" class="toggle-password" :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
-                :aria-pressed="showPassword" :disabled="loading" @click="showPassword = !showPassword">
-                <i class="fa-solid" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
-              </button>
-            </div>
-            <small v-if="errors.password" id="login-password-error" class="field-error">{{ errors.password }}</small>
+        <div class="field" :class="{ invalid: errors.password }">
+          <label for="login-password">Contraseña</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            <input id="login-password" v-model="form.password" :type="showPassword ? 'text' : 'password'"
+              autocomplete="current-password" maxlength="255" placeholder="Tu contraseña"
+              :aria-invalid="Boolean(errors.password)"
+              :aria-describedby="errors.password ? 'login-password-error' : undefined" :disabled="loading"
+              @input="errors.password = ''">
+            <button type="button" class="toggle-password" :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+              :aria-pressed="showPassword" :disabled="loading" @click="showPassword = !showPassword">
+              <i class="fa-solid" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
+            </button>
           </div>
+          <small v-if="errors.password" id="login-password-error" class="field-error">{{ errors.password }}</small>
+        </div>
 
-          <button type="submit" class="button button-primary button-wide submit-button" :disabled="!canSubmit">
-            <i v-if="loading" class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
-            <i v-else class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
-            {{ loading ? 'Verificando...' : 'Ingresar al sistema' }}
-          </button>
-        </form>
+        <button type="submit" class="button button-primary button-wide submit-button" :disabled="!canSubmit">
+          <i v-if="loading" class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+          <i v-else class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+          {{ loading ? 'Verificando...' : 'Iniciar sesión' }}
+        </button>
+      </form>
 
-        <footer class="login-footer">
-          <span>Ferretería La Central</span>
-          <span>{{ currentYear }}</span>
-        </footer>
-      </div>
+      <footer class="login-footer">
+        <span>Ferretería El Progreso, S.A. de C.V.</span>
+        <span>SICIV v1.0.0 · {{ currentYear }}</span>
+      </footer>
     </section>
   </main>
 </template>
 
 <style scoped>
-.login-card { display: grid; gap: 0; overflow: hidden; padding: 0; border-radius: 10px; }
-.login-header { display: grid; justify-items: center; gap: 6px; padding: 24px 32px; color: #fff; background: #203d62; text-align: center; }
-.login-header .brand-mark { margin-bottom: 8px; border: 1px solid #ffffff1f; border-radius: 50%; color: #f28c28; background: #193452; font-size: 22px; }
-.login-header h1 { margin: 0; color: #fff; font-size: 24px; line-height: 1.2; }
-.login-subtitle { margin: 0; color: #d7e2ee; font-size: 13px; }
-.login-content { display: grid; gap: 22px; padding: 32px; }
+.login-card { display: grid; gap: 0; }
+.login-card > :not(.login-header) { margin-right: 26px; margin-left: 26px; }
+.login-header { display: grid; justify-items: center; gap: 6px; padding: 22px 26px 20px; background: #24446d; text-align: center; }
+.login-header .brand-mark { width: 48px; height: 48px; margin-bottom: 4px; color: #ff922b; background: #203d62; font-size: 21px; }
+.login-header h1 { margin: 0; color: #fff; font-size: 20px; line-height: 1.2; }
+.login-subtitle { margin: 0; color: #d7e3f2; font-size: 12px; }
+.login-header .eyebrow { order: 3; color: #d7e3f2; font-size: 10px; font-weight: 500; letter-spacing: 0; text-transform: none; }
 .login-notice { display: flex; align-items: center; gap: 8px; margin: 0; padding: 11px 13px; border-radius: 8px; color: #1f3a5f; background: #eef4fb; font-size: 13px; }
 .alert-error { display: flex; align-items: center; gap: 8px; margin: 0; }
-.login-form { display: grid; gap: 16px; }
+.login-form { display: grid; gap: 14px; margin-top: 25px; }
 .field { display: grid; gap: 6px; }
-.field label { color: #445168; font-size: 13px; font-weight: 700; }
+.field label { color: #334d72; font-size: 10px; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; }
 .input-wrap { position: relative; }
 .input-wrap > i { position: absolute; top: 50%; left: 13px; color: #8ba0bc; transform: translateY(-50%); pointer-events: none; }
-.input-wrap input { padding-left: 38px; }
+.input-wrap input { min-height: 35px; padding: 7px 12px 7px 34px; border-color: #cbd6e5; border-radius: 6px; font-size: 12px; }
 .input-wrap input:disabled { background: #f8fafc; color: #94a3b8; }
 .field.invalid input { border-color: #dc2626; background: #fff7f7; }
 .field.invalid input:focus { box-shadow: 0 0 0 3px #dc262622; }
@@ -175,9 +174,9 @@ onMounted(() => usuarioInput.value?.focus());
 .input-wrap:has(.toggle-password) input { padding-right: 44px; }
 .submit-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; font-size: 14px; }
 .submit-button:disabled { cursor: not-allowed; opacity: .6; }
-.login-footer { display: flex; justify-content: center; gap: 4px; color: #94a3b8; font-size: 11px; }
+.login-footer { display: flex; justify-content: space-between; gap: 12px; color: #94a3b8; font-size: 11px; }
 
 @media (max-width: 480px) {
-  .login-content { padding: 28px 24px; }
+  .login-footer { flex-direction: column; align-items: center; text-align: center; }
 }
 </style>
